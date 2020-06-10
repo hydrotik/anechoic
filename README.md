@@ -1,6 +1,5 @@
-<img src="./logo.svg" width="200" />
+<img src="./logo.svg" width="300" />
 
-# anechoic
 Experimental JavaScript Audio Library. In very early stages.
 
 Version 0.0.1
@@ -23,5 +22,5 @@ Version 0.0.1
 - [ ] Remove Rollup?
 
 
-## Music Credit
-[Kai Engel - Illumination](https://freemusicarchive.org/music/Kai_Engel/Satin_1564/Kai_Engel_-_Satin_-_02_Illumination)
+## Music Credit(s)
+- [Kai Engel - Illumination](https://freemusicarchive.org/music/Kai_Engel/Satin_1564/Kai_Engel_-_Satin_-_02_Illumination)
