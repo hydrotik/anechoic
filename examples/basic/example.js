@@ -6,7 +6,12 @@
         const playButton = document.querySelector('#play-button');
 
         const anechoic = new Anechoic({});
-        anechoic.getLooper().loopAudio('../audio-files/kai-illum-loop.wav', 5, playButton);
+        anechoic.getLooper().loopAudio(
+            [
+                '../audio-files/djdonovan-eclipse-loop-1.wav',
+                '../audio-files/djdonovan-eclipse-loop-2.wav',
+                '../audio-files/djdonovan-eclipse-loop-3.wav',
+            ], 3, playButton);
     });
 
 })();

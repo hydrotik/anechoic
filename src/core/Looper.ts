@@ -10,11 +10,11 @@ class Looper {
 
     private audioCtx: AudioContext;
 
-    private scriptNode: ScriptProcessorNode;
-
     private audioData: any;
 
     private source: AudioBufferSourceNode;
+
+    private bufferArray: Array<AudioBuffer>;
 
     private isWebKit: boolean;
 
@@ -22,18 +22,27 @@ class Looper {
 
     private loopIndex: number = 0;
 
+    private loadIndex: number = 0;
+
+    private loadLength: number = 0;
+
     private playButton: HTMLElement;
 
 	constructor(config: ConfigInterface) {
 		this.config = config;
         this.audioData = [];
-        
+        this.bufferArray = [];
         this.isWebKit = (window.webkitAudioContext) ? true : false;
 	}
 
-	public loopAudio = (url: string, loops?: number, playButton?: any): string => {
+	public loopAudio = (url: string | Array<string>, loops?: number, playButton?: any): string => {
         this.loops = loops;
         this.playButton = playButton;
+        if (Array.isArray(url)) {
+            this.loadLength = url.length;
+        }else{
+            this.loadLength = 1;
+        }
         var AudioContext = window.AudioContext
             || window.webkitAudioContext
             || false; 
@@ -43,54 +52,59 @@ class Looper {
         } else {
             alert("Sorry, but the Web Audio API is not supported by your browser. Please, consider upgrading to the latest version or downloading Google Chrome or Mozilla Firefox");
         }
-
-        this.source = this.audioCtx.createBufferSource();
         
-        const loadData = () => {
+        const loadData = (u: string) => {
             const request = new XMLHttpRequest();
-            request.open('GET', url, true);
+            request.open('GET', u, true);
             request.responseType = 'arraybuffer';
             
-            request.onload = () => {
+            request.onload = async () => {
                 const r = request.response;
                 this.audioData = r;
-                handAudioDecode(this.loopIndex);
+                await handAudioDecode(r);
             }
-
 
             request.send();
             
         }
 
-        const handAudioDecode = (index: number) => {
-            const i = index;
-            const ad = this.audioData;
-            const s = this.source;
-            
-            this.audioCtx.decodeAudioData(ad, (buffer) => {
-                    s.buffer = buffer;
-            
-                    s.connect(this.audioCtx.destination);
-                    s.loop = false;
-
-                    startLoop(i);
+        const handAudioDecode = (r) => {
+            this.audioCtx.decodeAudioData(r, (buffer) => {
+                    this.bufferArray.push(buffer);
+                    if (this.loadIndex == this.loadLength - 1){
+                        this.audioCtx.onstatechange = () => console.log(`state change: ${this.audioCtx.state}`);
+                        startAudio(0);
+                    } else {
+                        this.loadIndex += 1;
+                    }
                 },
                 function(e){ console.log(`Error with decoding audio data ${e}`); }
             );
 
-            this.source.onended = () => { 
-                console.log('Ended');
-                this.loopIndex = i + 1;
-            }
+            
         }
 
-        const startLoop = (index: number) => {
+        const onAudioEnded = () => {
+            console.log(`Ended Index: ${this.loopIndex} - Loops: ${this.loops}`);
+            this.loopIndex = this.loopIndex + 1;
+            if(this.loopIndex < this.loops) startAudio(this.loopIndex);
+        }
+
+        const startAudio = (index: number) => {
+            this.source = this.audioCtx.createBufferSource();
+            this.source.buffer = this.bufferArray[index];
+            this.source.connect(this.audioCtx.destination);
+            this.source.onended = onAudioEnded;
             this.source.start(0);
-
-            this.audioCtx.onstatechange = () => console.log(`state change: ${this.audioCtx.state}`);
         }
 
-        loadData();
+        if (Array.isArray(url)) {
+            for(let i = 0; i < url.length; i += 1) {
+                loadData(url[i]);
+            }
+        } else {
+            loadData(url);
+        }
         
         if(this.isWebKit && this.playButton) {
             this.playButton.addEventListener('click', (event) => {
@@ -116,6 +130,7 @@ class Looper {
         tmp.set(new Uint8Array(buffer2), buffer1.byteLength);
         return tmp.buffer;
     };
+
 }
 
 

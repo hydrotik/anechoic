@@ -13,6 +13,8 @@ Version 0.0.1
 - [ ] Render waveform in Render using canvas
 
 ## Todos
+- [ ] Events
+- [ ] Performance framework and memory management analysis
 - [ ] NPM prep with entry point
 - [ ] Rollup watch issues
 - [ ] TSLint completely working
@@ -24,3 +26,4 @@ Version 0.0.1
 
 ## Music Credit(s)
 - [Kai Engel - Illumination](https://freemusicarchive.org/music/Kai_Engel/Satin_1564/Kai_Engel_-_Satin_-_02_Illumination)
+- [DJ Donovan - Eclipse](http://www.djdonovan.com) ©2020 Intellihance Records [Loops are non commercial, non derivative license](https://creativecommons.org/licenses/by-nc-nd/3.0/)
