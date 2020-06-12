@@ -99,10 +99,10 @@ var Anechoic = (function () {
     var Looper = (function () {
         function Looper(config) {
             var _this = this;
-            this.loops = 0;
             this.loopIndex = 0;
             this.loadIndex = 0;
             this.loadLength = 0;
+            this.currentLoopLength = 0;
             this.loopAudio = function (url, loops, playButton) {
                 _this.loops = loops;
                 _this.playButton = playButton;
@@ -121,7 +121,7 @@ var Anechoic = (function () {
                 else {
                     alert("Sorry, but the Web Audio API is not supported by your browser. Please, consider upgrading to the latest version or downloading Google Chrome or Mozilla Firefox");
                 }
-                var loadData = function (u) {
+                var loadData = function (u, index) {
                     var request = new XMLHttpRequest();
                     request.open('GET', u, true);
                     request.responseType = 'arraybuffer';
@@ -132,7 +132,7 @@ var Anechoic = (function () {
                                 case 0:
                                     r = request.response;
                                     this.audioData = r;
-                                    return [4, handAudioDecode(r)];
+                                    return [4, handAudioDecode(r, index)];
                                 case 1:
                                     _a.sent();
                                     return [2];
@@ -141,9 +141,16 @@ var Anechoic = (function () {
                     }); };
                     request.send();
                 };
-                var handAudioDecode = function (r) {
+                var handAudioDecode = function (r, index) {
                     _this.audioCtx.decodeAudioData(r, function (buffer) {
-                        _this.bufferArray.push(buffer);
+                        if (Array.isArray(_this.loops)) {
+                            for (var i = 0; i < _this.loops[index]; i += 1) {
+                                _this.bufferArray.push(buffer);
+                            }
+                        }
+                        else {
+                            _this.bufferArray.push(buffer);
+                        }
                         if (_this.loadIndex == _this.loadLength - 1) {
                             _this.audioCtx.onstatechange = function () { return console.log("state change: " + _this.audioCtx.state); };
                             startAudio(0);
@@ -156,7 +163,7 @@ var Anechoic = (function () {
                 var onAudioEnded = function () {
                     console.log("Ended Index: " + _this.loopIndex + " - Loops: " + _this.loops);
                     _this.loopIndex = _this.loopIndex + 1;
-                    if (_this.loopIndex < _this.loops)
+                    if (_this.loopIndex < _this.bufferArray.length)
                         startAudio(_this.loopIndex);
                 };
                 var startAudio = function (index) {
@@ -168,11 +175,11 @@ var Anechoic = (function () {
                 };
                 if (Array.isArray(url)) {
                     for (var i = 0; i < url.length; i += 1) {
-                        loadData(url[i]);
+                        loadData(url[i], i);
                     }
                 }
                 else {
-                    loadData(url);
+                    loadData(url, 0);
                 }
                 if (_this.isWebKit && _this.playButton) {
                     _this.playButton.addEventListener('click', function (event) {

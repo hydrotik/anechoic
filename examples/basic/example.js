@@ -11,7 +11,12 @@
                 '../audio-files/djdonovan-eclipse-loop-1.wav',
                 '../audio-files/djdonovan-eclipse-loop-2.wav',
                 '../audio-files/djdonovan-eclipse-loop-3.wav',
-            ], 3, playButton);
+            ],
+            [
+                8,
+                4,
+                4
+            ], playButton);
     });
 
 })();

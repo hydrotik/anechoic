@@ -18,13 +18,15 @@ class Looper {
 
     private isWebKit: boolean;
 
-    private loops: number = 0;
+    private loops: number | Array<number>;
 
     private loopIndex: number = 0;
 
     private loadIndex: number = 0;
 
     private loadLength: number = 0;
+
+    private currentLoopLength: number = 0;
 
     private playButton: HTMLElement;
 
@@ -35,7 +37,7 @@ class Looper {
         this.isWebKit = (window.webkitAudioContext) ? true : false;
 	}
 
-	public loopAudio = (url: string | Array<string>, loops?: number, playButton?: any): string => {
+	public loopAudio = (url: string | Array<string>, loops?: number | Array<number>, playButton?: any): string => {
         this.loops = loops;
         this.playButton = playButton;
         if (Array.isArray(url)) {
@@ -53,7 +55,7 @@ class Looper {
             alert("Sorry, but the Web Audio API is not supported by your browser. Please, consider upgrading to the latest version or downloading Google Chrome or Mozilla Firefox");
         }
         
-        const loadData = (u: string) => {
+        const loadData = (u: string, index) => {
             const request = new XMLHttpRequest();
             request.open('GET', u, true);
             request.responseType = 'arraybuffer';
@@ -61,16 +63,22 @@ class Looper {
             request.onload = async () => {
                 const r = request.response;
                 this.audioData = r;
-                await handAudioDecode(r);
+                await handAudioDecode(r, index);
             }
 
             request.send();
             
         }
 
-        const handAudioDecode = (r) => {
+        const handAudioDecode = (r, index) => {
             this.audioCtx.decodeAudioData(r, (buffer) => {
-                    this.bufferArray.push(buffer);
+                    if (Array.isArray(this.loops)) {
+                        for (let i = 0; i < this.loops[index]; i += 1) {
+                            this.bufferArray.push(buffer);
+                        }
+                    } else {
+                        this.bufferArray.push(buffer);
+                    }
                     if (this.loadIndex == this.loadLength - 1){
                         this.audioCtx.onstatechange = () => console.log(`state change: ${this.audioCtx.state}`);
                         startAudio(0);
@@ -87,7 +95,7 @@ class Looper {
         const onAudioEnded = () => {
             console.log(`Ended Index: ${this.loopIndex} - Loops: ${this.loops}`);
             this.loopIndex = this.loopIndex + 1;
-            if(this.loopIndex < this.loops) startAudio(this.loopIndex);
+            if(this.loopIndex < this.bufferArray.length) startAudio(this.loopIndex);
         }
 
         const startAudio = (index: number) => {
@@ -100,10 +108,10 @@ class Looper {
 
         if (Array.isArray(url)) {
             for(let i = 0; i < url.length; i += 1) {
-                loadData(url[i]);
+                loadData(url[i], i);
             }
         } else {
-            loadData(url);
+            loadData(url, 0);
         }
         
         if(this.isWebKit && this.playButton) {
