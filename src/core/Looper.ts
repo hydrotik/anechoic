@@ -82,7 +82,13 @@ class Looper extends EventEmitter {
                     }
                     if (this.loadIndex == this.loadLength - 1){
                         this.audioCtx.onstatechange = () => {
-                            this.emit(ON_STATE_CHANGED, { type: ON_STATE_CHANGED, state: this.audioCtx?.state });
+                            this.emit(
+                                ON_STATE_CHANGED,
+                                {
+                                    type: ON_STATE_CHANGED,
+                                    state: this.audioCtx?.state
+                                }
+                            );
                         }
                         startAudio(0);
                     } else {
@@ -90,7 +96,13 @@ class Looper extends EventEmitter {
                     }
                 },
                 (e) => {
-                    this.emit(ON_DECODE_ERROR, { type: ON_DECODE_ERROR, message: `Error decoding audio data ${e}` });
+                    this.emit(
+                        ON_DECODE_ERROR,
+                        {
+                            type: ON_DECODE_ERROR,
+                            message: `Error decoding audio data ${e}`
+                        }
+                    );
                 }
             );
 
@@ -142,7 +154,14 @@ class Looper extends EventEmitter {
                 event.preventDefault();
 
                 this.audioCtx.resume().then(() => {
-                    this.emit('onResumed', { currentIndex: this.currentIndex, loopCount: (this.loops.hasOwnProperty('length')) ? (this.loops as Array<number>).length : this.loops });
+                    this.emit(
+                        ON_RESUMED,
+                        {
+                            type: ON_RESUMED,
+                            currentIndex: this.currentIndex,
+                            loopCount: (this.loops.hasOwnProperty('length')) ? (this.loops as Array<number>).length : this.loops
+                        }
+                    );
                 });
             
             }, false);

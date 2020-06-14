@@ -1,4 +1,3 @@
-
 export const ON_LOOP_COMPLETE = 'onLoopComplete';
 export const ON_SEQUENCE_COMPLETE = 'onSequenceComplete';
 export const ON_RESUMED = 'onResumed';
