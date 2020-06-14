@@ -154,12 +154,17 @@ var Anechoic = (function () {
         return EventEmitter;
     }());
 
+    var ON_LOOP_COMPLETE = 'onLoopComplete';
+    var ON_SEQUENCE_COMPLETE = 'onSequenceComplete';
+    var ON_STATE_CHANGED = 'onStateChanged';
+    var ON_DECODE_ERROR = 'onDecodeError';
+
     var Looper = (function (_super) {
         __extends(Looper, _super);
         function Looper(config) {
             var _this = _super.call(this) || this;
             _this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            _this.loopIndex = 0;
+            _this.currentIndex = 0;
             _this.loadIndex = 0;
             _this.loadLength = 0;
             _this.currentLoopLength = 0;
@@ -204,19 +209,36 @@ var Anechoic = (function () {
                             _this.bufferArray.push(buffer);
                         }
                         if (_this.loadIndex == _this.loadLength - 1) {
-                            _this.audioCtx.onstatechange = function () { var _a; return console.log("state change: " + ((_a = _this.audioCtx) === null || _a === void 0 ? void 0 : _a.state)); };
+                            _this.audioCtx.onstatechange = function () {
+                                var _a;
+                                _this.emit(ON_STATE_CHANGED, { type: ON_STATE_CHANGED, state: (_a = _this.audioCtx) === null || _a === void 0 ? void 0 : _a.state });
+                            };
                             startAudio(0);
                         }
                         else {
                             _this.loadIndex += 1;
                         }
-                    }, function (e) { console.log("Error with decoding audio data " + e); });
+                    }, function (e) {
+                        _this.emit(ON_DECODE_ERROR, { type: ON_DECODE_ERROR, message: "Error decoding audio data " + e });
+                    });
                 };
                 var onAudioEnded = function () {
-                    _this.emit('onLoopComplete', { loopIndex: _this.loopIndex, loopCount: _this.loops });
-                    _this.loopIndex = _this.loopIndex + 1;
-                    if (_this.loopIndex < _this.bufferArray.length)
-                        startAudio(_this.loopIndex);
+                    if (_this.currentIndex < _this.bufferArray.length) {
+                        startAudio(_this.currentIndex);
+                        _this.emit(ON_LOOP_COMPLETE, {
+                            type: ON_LOOP_COMPLETE,
+                            currentIndex: _this.currentIndex,
+                            loopCount: (_this.loops.hasOwnProperty('length')) ? _this.loops.length : _this.loops
+                        });
+                    }
+                    else {
+                        _this.emit(ON_SEQUENCE_COMPLETE, {
+                            type: ON_SEQUENCE_COMPLETE,
+                            currentIndex: _this.currentIndex,
+                            loopCount: (_this.loops.hasOwnProperty('length')) ? _this.loops.length : _this.loops
+                        });
+                    }
+                    _this.currentIndex = _this.currentIndex + 1;
                 };
                 var startAudio = function (index) {
                     _this.source = _this.audioCtx.createBufferSource();
@@ -237,7 +259,7 @@ var Anechoic = (function () {
                     _this.playButton.addEventListener('click', function (event) {
                         event.preventDefault();
                         _this.audioCtx.resume().then(function () {
-                            _this.emit('onResumed', { loopIndex: _this.loopIndex, loopCount: _this.loops });
+                            _this.emit('onResumed', { currentIndex: _this.currentIndex, loopCount: (_this.loops.hasOwnProperty('length')) ? _this.loops.length : _this.loops });
                         });
                     }, false);
                 }

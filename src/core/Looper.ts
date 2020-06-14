@@ -1,4 +1,11 @@
 import EventEmitter , { Emitter } from '../events/EventEmitter';
+import {
+    ON_LOOP_COMPLETE,
+    ON_SEQUENCE_COMPLETE,
+    ON_RESUMED,
+    ON_DECODE_ERROR,
+    ON_STATE_CHANGED,
+} from '../events/Events';
 
 interface ConfigInterface {
 	loop?: boolean;
@@ -21,7 +28,7 @@ class Looper extends EventEmitter {
 
     private loops: number | Array<number> | undefined;
 
-    private loopIndex: number = 0;
+    private currentIndex: number = 0;
 
     private loadIndex: number = 0;
 
@@ -75,23 +82,43 @@ class Looper extends EventEmitter {
                     }
                     if (this.loadIndex == this.loadLength - 1){
                         this.audioCtx.onstatechange = () => {
-                            this.emit('onStateChange', {state: this.audioCtx?.state});
+                            this.emit(ON_STATE_CHANGED, { type: ON_STATE_CHANGED, state: this.audioCtx?.state });
                         }
                         startAudio(0);
                     } else {
                         this.loadIndex += 1;
                     }
                 },
-                function(e){ console.log(`Error with decoding audio data ${e}`); }
+                (e) => {
+                    this.emit(ON_DECODE_ERROR, { type: ON_DECODE_ERROR, message: `Error decoding audio data ${e}` });
+                }
             );
 
             
         }
 
         const onAudioEnded = () => {
-            this.emit('onLoopComplete', {loopIndex: this.loopIndex, loopCount: this.loops});
-            this.loopIndex = this.loopIndex + 1;
-            if(this.loopIndex < this.bufferArray.length) startAudio(this.loopIndex);
+            if(this.currentIndex < this.bufferArray.length){
+                startAudio(this.currentIndex);
+                this.emit(
+                    ON_LOOP_COMPLETE,
+                    {
+                        type: ON_LOOP_COMPLETE,
+                        currentIndex: this.currentIndex,
+                        loopCount: (this.loops.hasOwnProperty('length')) ? (this.loops as Array<number>).length : this.loops
+                    }
+                );
+            } else {
+                this.emit(
+                    ON_SEQUENCE_COMPLETE,
+                    {
+                        type: ON_SEQUENCE_COMPLETE,
+                        currentIndex: this.currentIndex,
+                        loopCount: (this.loops.hasOwnProperty('length')) ? (this.loops as Array<number>).length : this.loops
+                    }
+                );
+            }
+            this.currentIndex = this.currentIndex + 1;
         }
 
         const startAudio = (index: number) => {
@@ -115,7 +142,7 @@ class Looper extends EventEmitter {
                 event.preventDefault();
 
                 this.audioCtx.resume().then(() => {
-                    this.emit('onResumed', {loopIndex: this.loopIndex, loopCount: this.loops});
+                    this.emit('onResumed', { currentIndex: this.currentIndex, loopCount: (this.loops.hasOwnProperty('length')) ? (this.loops as Array<number>).length : this.loops });
                 });
             
             }, false);
