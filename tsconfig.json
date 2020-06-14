@@ -3,9 +3,8 @@
       "target": "es5", //defines what sort of code ts generates, es5 because it's what most browsers currently UNDERSTANDS.
       "module": "ES2015",
       "moduleResolution": "node",
-      "emitDecoratorMetadata": true, //for angular to be able to use metadata we specify in our components.
-      "experimentalDecorators": true, //angular needs decorators like @Component, @Injectable, etc.
       "removeComments": true,
+      "esModuleInterop": true,
       "noImplicitAny": false,
       "lib": [
           "es2015",

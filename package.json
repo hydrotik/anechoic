@@ -12,7 +12,8 @@
     "dev": "rollup --config rollup.config.dev.js --watch"
   },
   "dependencies": {
-    "@types/webaudioapi": "^0.0.27"
+    "@types/webaudioapi": "^0.0.27",
+    "eventemitter3": "^4.0.4"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^4.1.2",

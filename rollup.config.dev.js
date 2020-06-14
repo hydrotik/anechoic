@@ -8,6 +8,16 @@ export default {
 		format: 'iife',
 		name: 'Anechoic'
 	},
+	globals: {
+		'react': 'React',
+		'react-dom': 'ReactDOM',
+		'prop-types': 'PropTypes'
+	  },
+	  external: [
+		'react',
+		'react-dom',
+		'prop-types'
+	  ],
 	plugins: [
 		typescript({ lib: ["es5", "es6", "dom"], target: "es5" })
 	]

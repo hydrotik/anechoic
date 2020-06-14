@@ -1,24 +1,25 @@
+import EventEmitter , { Emitter } from '../events/EventEmitter';
 
 interface ConfigInterface {
 	loop?: boolean;
 }
 
-class Looper {
-    private audioObj: HTMLAudioElement;
+class Looper extends EventEmitter {
+    private audioObj: HTMLAudioElement | undefined;
     
     private config: ConfigInterface;
 
-    private audioCtx: AudioContext;
+    private audioCtx: AudioContext = new (window.AudioContext || window.webkitAudioContext)();
 
     private audioData: any;
 
-    private source: AudioBufferSourceNode;
+    private source: AudioBufferSourceNode | undefined;
 
     private bufferArray: Array<AudioBuffer>;
 
     private isWebKit: boolean;
 
-    private loops: number | Array<number>;
+    private loops: number | Array<number> | undefined;
 
     private loopIndex: number = 0;
 
@@ -28,9 +29,10 @@ class Looper {
 
     private currentLoopLength: number = 0;
 
-    private playButton: HTMLElement;
+    private playButton: HTMLElement | undefined;
 
 	constructor(config: ConfigInterface) {
+        super();
 		this.config = config;
         this.audioData = [];
         this.bufferArray = [];
@@ -45,15 +47,7 @@ class Looper {
         }else{
             this.loadLength = 1;
         }
-        var AudioContext = window.AudioContext
-            || window.webkitAudioContext
-            || false; 
-
-        if (AudioContext) {
-            this.audioCtx = new AudioContext;
-        } else {
-            alert("Sorry, but the Web Audio API is not supported by your browser. Please, consider upgrading to the latest version or downloading Google Chrome or Mozilla Firefox");
-        }
+       
         
         const loadData = (u: string, index) => {
             const request = new XMLHttpRequest();
@@ -71,7 +65,7 @@ class Looper {
         }
 
         const handAudioDecode = (r, index) => {
-            this.audioCtx.decodeAudioData(r, (buffer) => {
+            this.audioCtx?.decodeAudioData(r, (buffer) => {
                     if (Array.isArray(this.loops)) {
                         for (let i = 0; i < this.loops[index]; i += 1) {
                             this.bufferArray.push(buffer);
@@ -80,7 +74,9 @@ class Looper {
                         this.bufferArray.push(buffer);
                     }
                     if (this.loadIndex == this.loadLength - 1){
-                        this.audioCtx.onstatechange = () => console.log(`state change: ${this.audioCtx.state}`);
+                        this.audioCtx.onstatechange = () => {
+                            this.emit('onStateChange', {state: this.audioCtx?.state});
+                        }
                         startAudio(0);
                     } else {
                         this.loadIndex += 1;
@@ -93,7 +89,7 @@ class Looper {
         }
 
         const onAudioEnded = () => {
-            console.log(`Ended Index: ${this.loopIndex} - Loops: ${this.loops}`);
+            this.emit('onLoopComplete', {loopIndex: this.loopIndex, loopCount: this.loops});
             this.loopIndex = this.loopIndex + 1;
             if(this.loopIndex < this.bufferArray.length) startAudio(this.loopIndex);
         }
@@ -119,7 +115,7 @@ class Looper {
                 event.preventDefault();
 
                 this.audioCtx.resume().then(() => {
-                    console.log('Playback resumed successfully');
+                    this.emit('onResumed', {loopIndex: this.loopIndex, loopCount: this.loops});
                 });
             
             }, false);

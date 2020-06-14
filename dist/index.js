@@ -57,6 +57,20 @@ var Anechoic = (function () {
     OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
     PERFORMANCE OF THIS SOFTWARE.
     ***************************************************************************** */
+    /* global Reflect, Promise */
+
+    var extendStatics = function(d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+
+    function __extends(d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    }
 
     function __awaiter(thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -96,14 +110,60 @@ var Anechoic = (function () {
         }
     }
 
-    var Looper = (function () {
-        function Looper(config) {
+    var EventEmitter = (function () {
+        function EventEmitter() {
+            this.events = {};
+        }
+        EventEmitter.prototype.on = function (event, listener) {
             var _this = this;
-            this.loopIndex = 0;
-            this.loadIndex = 0;
-            this.loadLength = 0;
-            this.currentLoopLength = 0;
-            this.loopAudio = function (url, loops, playButton) {
+            if (typeof this.events[event] !== 'object') {
+                this.events[event] = [];
+            }
+            this.events[event].push(listener);
+            return function () { return _this.removeListener(event, listener); };
+        };
+        EventEmitter.prototype.removeListener = function (event, listener) {
+            if (typeof this.events[event] === 'object') {
+                var idx = this.events[event].indexOf(listener);
+                if (idx > -1) {
+                    this.events[event].splice(idx, 1);
+                }
+            }
+        };
+        EventEmitter.prototype.emit = function (event) {
+            var _this = this;
+            var args = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                args[_i - 1] = arguments[_i];
+            }
+            if (typeof this.events[event] === 'object') {
+                this.events[event].forEach(function (listener) { return listener.apply(_this, args); });
+            }
+        };
+        EventEmitter.prototype.once = function (event, listener) {
+            var _this = this;
+            var remove = this.on(event, function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                remove();
+                listener.apply(_this, args);
+            });
+        };
+        return EventEmitter;
+    }());
+
+    var Looper = (function (_super) {
+        __extends(Looper, _super);
+        function Looper(config) {
+            var _this = _super.call(this) || this;
+            _this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            _this.loopIndex = 0;
+            _this.loadIndex = 0;
+            _this.loadLength = 0;
+            _this.currentLoopLength = 0;
+            _this.loopAudio = function (url, loops, playButton) {
                 _this.loops = loops;
                 _this.playButton = playButton;
                 if (Array.isArray(url)) {
@@ -111,15 +171,6 @@ var Anechoic = (function () {
                 }
                 else {
                     _this.loadLength = 1;
-                }
-                var AudioContext = window.AudioContext
-                    || window.webkitAudioContext
-                    || false;
-                if (AudioContext) {
-                    _this.audioCtx = new AudioContext;
-                }
-                else {
-                    alert("Sorry, but the Web Audio API is not supported by your browser. Please, consider upgrading to the latest version or downloading Google Chrome or Mozilla Firefox");
                 }
                 var loadData = function (u, index) {
                     var request = new XMLHttpRequest();
@@ -142,7 +193,8 @@ var Anechoic = (function () {
                     request.send();
                 };
                 var handAudioDecode = function (r, index) {
-                    _this.audioCtx.decodeAudioData(r, function (buffer) {
+                    var _a;
+                    (_a = _this.audioCtx) === null || _a === void 0 ? void 0 : _a.decodeAudioData(r, function (buffer) {
                         if (Array.isArray(_this.loops)) {
                             for (var i = 0; i < _this.loops[index]; i += 1) {
                                 _this.bufferArray.push(buffer);
@@ -152,7 +204,7 @@ var Anechoic = (function () {
                             _this.bufferArray.push(buffer);
                         }
                         if (_this.loadIndex == _this.loadLength - 1) {
-                            _this.audioCtx.onstatechange = function () { return console.log("state change: " + _this.audioCtx.state); };
+                            _this.audioCtx.onstatechange = function () { var _a; return console.log("state change: " + ((_a = _this.audioCtx) === null || _a === void 0 ? void 0 : _a.state)); };
                             startAudio(0);
                         }
                         else {
@@ -161,7 +213,7 @@ var Anechoic = (function () {
                     }, function (e) { console.log("Error with decoding audio data " + e); });
                 };
                 var onAudioEnded = function () {
-                    console.log("Ended Index: " + _this.loopIndex + " - Loops: " + _this.loops);
+                    _this.emit('onLoopComplete', { loopIndex: _this.loopIndex, loopCount: _this.loops });
                     _this.loopIndex = _this.loopIndex + 1;
                     if (_this.loopIndex < _this.bufferArray.length)
                         startAudio(_this.loopIndex);
@@ -185,28 +237,29 @@ var Anechoic = (function () {
                     _this.playButton.addEventListener('click', function (event) {
                         event.preventDefault();
                         _this.audioCtx.resume().then(function () {
-                            console.log('Playback resumed successfully');
+                            _this.emit('onResumed', { loopIndex: _this.loopIndex, loopCount: _this.loops });
                         });
                     }, false);
                 }
                 return "Playing: " + url;
             };
-            this.getAudioCtx = function (url) {
+            _this.getAudioCtx = function (url) {
                 return _this.audioCtx;
             };
-            this.appendBuffer = function (buffer1, buffer2) {
+            _this.appendBuffer = function (buffer1, buffer2) {
                 var tmp = new Uint8Array(buffer1.byteLength + buffer2.byteLength);
                 tmp.set(new Uint8Array(buffer1), 0);
                 tmp.set(new Uint8Array(buffer2), buffer1.byteLength);
                 return tmp.buffer;
             };
-            this.config = config;
-            this.audioData = [];
-            this.bufferArray = [];
-            this.isWebKit = (window.webkitAudioContext) ? true : false;
+            _this.config = config;
+            _this.audioData = [];
+            _this.bufferArray = [];
+            _this.isWebKit = (window.webkitAudioContext) ? true : false;
+            return _this;
         }
         return Looper;
-    }());
+    }(EventEmitter));
 
     var Anechoic = (function () {
         function Anechoic(config) {
