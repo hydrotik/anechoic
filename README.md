@@ -6,8 +6,8 @@ Version 0.0.1
 
 ## Features
 - [x] Loop single wave file seamlessly
-- [ ] Loop single wave seamlessly with loop events
-- [ ] Loop multiple waves seamlessly
+- [x] Loop single wave seamlessly with loop events
+- [x] Loop multiple waves seamlessly
 - [ ] Normalize behavior across browsers
 - [ ] Account for required user interactions in Safari
 - [ ] Render waveform in Render using canvas
@@ -15,6 +15,7 @@ Version 0.0.1
 ## Todos
 - [ ] Events
 - [ ] Performance framework and memory management analysis
+- [ ] Realtime sequence changes
 - [ ] NPM prep with entry point
 - [ ] Rollup watch issues
 - [ ] TSLint completely working
