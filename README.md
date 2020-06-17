@@ -10,7 +10,8 @@ Version 0.0.1
 - [x] Loop multiple waves seamlessly
 - [ ] Normalize behavior across browsers
 - [ ] Account for required user interactions in Safari
-- [ ] Render waveform in Render using canvas
+- [x] Render waveform in Render using canvas
+- [ ] Render waveform with multiple loops
 
 ## Todos
 - [ ] Events
