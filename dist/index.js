@@ -4,40 +4,83 @@ var Anechoic = (function () {
     var Render = (function () {
         function Render(config) {
             var _this = this;
-            this.draw = function () {
-                _this.drawVisual = requestAnimationFrame(_this.draw);
-                _this.analyser.getByteTimeDomainData(_this.dataArray);
-                _this.canvasCtx.fillStyle = 'rgb(200, 200, 200)';
-                _this.canvasCtx.fillRect(0, 0, _this.WIDTH, _this.HEIGHT);
-                _this.canvasCtx.lineWidth = 2;
-                _this.canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
-                _this.canvasCtx.beginPath();
-                var sliceWidth = _this.WIDTH * 1.0 / _this.bufferLength;
-                var x = 0;
-                for (var i = 0; i < _this.bufferLength; i++) {
-                    var v = _this.dataArray[i] / 128.0;
-                    var y = v * _this.HEIGHT / 2;
-                    if (i === 0) {
-                        _this.canvasCtx.moveTo(x, y);
-                    }
-                    else {
-                        _this.canvasCtx.lineTo(x, y);
-                    }
-                    x += sliceWidth;
+            this.visualize = function (audioCtx, source) {
+                _this.WIDTH = _this.WIDTH | _this.canvas.width;
+                _this.HEIGHT = _this.HEIGHT | _this.canvas.height;
+                var analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 2048;
+                var bufferLength = analyser.frequencyBinCount;
+                var dataArray = new Uint8Array(bufferLength);
+                analyser.getByteTimeDomainData(dataArray);
+                source.connect(analyser);
+                analyser.connect(audioCtx.destination);
+                if (_this.type === "wave") {
+                    _this.canvasCtx.clearRect(0, 0, _this.WIDTH, _this.HEIGHT);
+                    var draw = function () {
+                        _this.drawVisual = requestAnimationFrame(draw);
+                        analyser.getByteTimeDomainData(dataArray);
+                        _this.canvasCtx.fillStyle = "rgb(200, 200, 200)";
+                        _this.canvasCtx.fillRect(0, 0, _this.canvas.width, _this.canvas.height);
+                        _this.canvasCtx.lineWidth = 2;
+                        _this.canvasCtx.strokeStyle = "rgb(0, 0, 0)";
+                        _this.canvasCtx.beginPath();
+                        var sliceWidth = _this.canvas.width * 1.0 / bufferLength;
+                        var x = 0;
+                        for (var i = 0; i < bufferLength; i++) {
+                            var v = dataArray[i] / 128.0;
+                            var y = v * _this.canvas.height / 2;
+                            if (i === 0) {
+                                _this.canvasCtx.moveTo(x, y);
+                            }
+                            else {
+                                _this.canvasCtx.lineTo(x, y);
+                            }
+                            x += sliceWidth;
+                        }
+                        _this.canvasCtx.lineTo(_this.canvas.width, _this.canvas.height / 2);
+                        _this.canvasCtx.stroke();
+                    };
+                    draw();
                 }
-                _this.canvasCtx.lineTo(_this.canvas.width, _this.canvas.height / 2);
-                _this.canvasCtx.stroke();
+                else if (_this.type == "bars") {
+                    analyser.fftSize = 256;
+                    var bufferLengthAlt = analyser.frequencyBinCount;
+                    console.log(bufferLengthAlt);
+                    var dataArrayAlt = new Uint8Array(bufferLengthAlt);
+                    _this.canvasCtx.clearRect(0, 0, _this.WIDTH, _this.HEIGHT);
+                    var drawAlt = function () {
+                        _this.drawVisual = requestAnimationFrame(drawAlt);
+                        analyser.getByteFrequencyData(dataArrayAlt);
+                        _this.canvasCtx.fillStyle = 'rgb(0, 0, 0)';
+                        _this.canvasCtx.fillRect(0, 0, _this.WIDTH, _this.HEIGHT);
+                        var barWidth = (_this.WIDTH / bufferLengthAlt) * 2.5;
+                        var barHeight;
+                        var x = 0;
+                        for (var i = 0; i < bufferLengthAlt; i++) {
+                            barHeight = dataArrayAlt[i];
+                            _this.canvasCtx.fillStyle = 'rgb(' + (barHeight + 100) + ',50,50)';
+                            _this.canvasCtx.fillRect(x, _this.HEIGHT - barHeight / 2, barWidth, barHeight / 2);
+                            x += barWidth + 1;
+                        }
+                    };
+                    drawAlt();
+                }
+                else if (_this.type == "off") {
+                    _this.canvasCtx.clearRect(0, 0, _this.WIDTH, _this.HEIGHT);
+                    _this.canvasCtx.fillStyle = "red";
+                    _this.canvasCtx.fillRect(0, 0, _this.WIDTH, _this.HEIGHT);
+                }
+            };
+            this.stop = function () {
+                cancelAnimationFrame(_this.drawVisual);
             };
             this.canvasCtx = config.canvas.getContext("2d");
-            this.audioCtx = config.audioCtx;
             this.canvas = config.canvas;
-            this.analyser = this.audioCtx.createAnalyser();
-            this.analyser.fftSize = Render.fftSize;
-            this.bufferLength = this.analyser.frequencyBinCount;
-            this.dataArray = new Uint8Array(this.bufferLength);
-            this.analyser.getByteTimeDomainData(this.dataArray);
-            this.WIDTH = config.w;
-            this.HEIGHT = config.h;
+            if (config.w)
+                this.WIDTH = config.w;
+            if (config.h)
+                this.HEIGHT = config.h;
+            this.type = (config && config.type) ? config.type : 'wave';
         }
         Render.fftSize = 2048;
         return Render;
@@ -154,8 +197,10 @@ var Anechoic = (function () {
         return EventEmitter;
     }());
 
+    var ON_LOOP_START = 'onLoopStart';
     var ON_LOOP_COMPLETE = 'onLoopComplete';
     var ON_SEQUENCE_COMPLETE = 'onSequenceComplete';
+    var ON_RESUMED = 'onResumed';
     var ON_STATE_CHANGED = 'onStateChanged';
     var ON_DECODE_ERROR = 'onDecodeError';
 
@@ -211,7 +256,10 @@ var Anechoic = (function () {
                         if (_this.loadIndex == _this.loadLength - 1) {
                             _this.audioCtx.onstatechange = function () {
                                 var _a;
-                                _this.emit(ON_STATE_CHANGED, { type: ON_STATE_CHANGED, state: (_a = _this.audioCtx) === null || _a === void 0 ? void 0 : _a.state });
+                                _this.emit(ON_STATE_CHANGED, {
+                                    type: ON_STATE_CHANGED,
+                                    state: (_a = _this.audioCtx) === null || _a === void 0 ? void 0 : _a.state
+                                });
                             };
                             startAudio(0);
                         }
@@ -219,11 +267,14 @@ var Anechoic = (function () {
                             _this.loadIndex += 1;
                         }
                     }, function (e) {
-                        _this.emit(ON_DECODE_ERROR, { type: ON_DECODE_ERROR, message: "Error decoding audio data " + e });
+                        _this.emit(ON_DECODE_ERROR, {
+                            type: ON_DECODE_ERROR,
+                            message: "Error decoding audio data " + e
+                        });
                     });
                 };
                 var onAudioEnded = function () {
-                    if (_this.currentIndex < _this.bufferArray.length) {
+                    if (_this.currentIndex < _this.bufferArray.length - 1) {
                         startAudio(_this.currentIndex);
                         _this.emit(ON_LOOP_COMPLETE, {
                             type: ON_LOOP_COMPLETE,
@@ -241,11 +292,18 @@ var Anechoic = (function () {
                     _this.currentIndex = _this.currentIndex + 1;
                 };
                 var startAudio = function (index) {
-                    _this.source = _this.audioCtx.createBufferSource();
-                    _this.source.buffer = _this.bufferArray[index];
-                    _this.source.connect(_this.audioCtx.destination);
-                    _this.source.onended = onAudioEnded;
-                    _this.source.start(0);
+                    var source = _this.audioCtx.createBufferSource();
+                    source.buffer = _this.bufferArray[index];
+                    source.connect(_this.audioCtx.destination);
+                    source.onended = onAudioEnded;
+                    source.start(0);
+                    _this.emit(ON_LOOP_START, {
+                        type: ON_LOOP_START,
+                        currentIndex: _this.currentIndex,
+                        loopCount: (_this.loops.hasOwnProperty('length')) ? _this.loops.length : _this.loops,
+                        audioCtx: _this.audioCtx,
+                        source: source,
+                    });
                 };
                 if (Array.isArray(url)) {
                     for (var i = 0; i < url.length; i += 1) {
@@ -259,14 +317,15 @@ var Anechoic = (function () {
                     _this.playButton.addEventListener('click', function (event) {
                         event.preventDefault();
                         _this.audioCtx.resume().then(function () {
-                            _this.emit('onResumed', { currentIndex: _this.currentIndex, loopCount: (_this.loops.hasOwnProperty('length')) ? _this.loops.length : _this.loops });
+                            _this.emit(ON_RESUMED, {
+                                type: ON_RESUMED,
+                                currentIndex: _this.currentIndex,
+                                loopCount: (_this.loops.hasOwnProperty('length')) ? _this.loops.length : _this.loops
+                            });
                         });
                     }, false);
                 }
                 return "Playing: " + url;
-            };
-            _this.getAudioCtx = function (url) {
-                return _this.audioCtx;
             };
             _this.appendBuffer = function (buffer1, buffer2) {
                 var tmp = new Uint8Array(buffer1.byteLength + buffer2.byteLength);

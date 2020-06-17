@@ -1,5 +1,4 @@
 (() => {
-
     window.addEventListener('DOMContentLoaded', (event) => {
         console.log('Loading Example 1');
 
@@ -35,5 +34,4 @@
                 4
             ], playButton);
     });
-
 })();
