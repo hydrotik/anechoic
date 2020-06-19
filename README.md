@@ -14,16 +14,14 @@ Version 0.0.1
 - [ ] Render waveform with multiple loops
 
 ## Todos
-- [ ] Events
+- [x] Events
 - [ ] Performance framework and memory management analysis
 - [ ] Realtime sequence changes
-- [ ] NPM prep with entry point
 - [ ] Rollup watch issues
 - [ ] TSLint completely working
 - [ ] Unit Tests
 - [ ] Cleanup NPM entry points
 - [ ] Test, dev, and prod rollup config
-- [ ] Remove Rollup?
 
 
 ## Music Credit(s)

@@ -1,23 +1,38 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Example 2</title>
-       <script src="../../dist/index.js" type="text/javascript"></script>
-    </head>
+	<head>
+		<title>Example 2</title>
+		<link rel="stylesheet" type="text/css" href="../css/reset.css">
+		<link rel="stylesheet" type="text/css" href="../css/main.css">
+		<style>
+			
+			canvas {
+				width: 350px;
+				height: 150px;
+			}
+		</style>
+		<script src="../../dist/index.js" type="text/javascript"></script>
+	</head>
 
-    <body>
-        <header></header>
-        <main>
-            <button id="play-button">Play</button>
-            <div>
-                <canvas id="render-container">
+	<body>
+		<header>
+			<h1>Example 2</h1>
+		</header>
+		<main>
+			<button id="play-button" class="play">
+				<span class="circle" aria-hidden="true">
+					<span class="icon arrow"></span>
+				</span>
+				<span class="button-text">Play</span>
+			</button>
+			
+			<div>
+				<canvas id="render-container"></canvas>
+			</div>
+		</main>
+		<footer>
 
-                </canvas>
-            </div>
-        </main>
-        <footer>
-
-        </footer>
-        <script src="example2.js" type="text/javascript"></script>
-    </body>
+		</footer>
+		<script src="example2.js" type="text/javascript"></script>
+	</body>
 </html>

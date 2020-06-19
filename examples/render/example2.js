@@ -11,19 +11,20 @@
 
 		const render = anechoic.getRender({
 			canvas: canvas,
-			w: 500,
-			h: 250
+			w: 350,
+			h: 150,
+			bgColor: '#F2F2F2',
+			lineColor: '#D95032',
 		});
 
 		
 
 		looper.on('onLoopStart', (params) => {
 			console.log(params);
-			render.visualize(params.audioCtx, params.source);
+			render.visualizer(params.audioCtx, params.source);
 		});
 		looper.on('onLoopComplete', (params) => {
 			console.log(params);
-			render.stop();
 		});
 		looper.on('onSequenceComplete', (params) => {
 			console.log(params);
@@ -38,7 +39,8 @@
 		looper.on('onDecodeError', (params) => {
 			console.warn(params);
 		});
-		looper.loopAudio('../audio-files/kai-illumination.mp3', [1], playButton);
+		looper.loopAudio('../audio-files/djdonovan-eclipse-loop-1.wav', [4], playButton);
+		// looper.loopAudio('../audio-files/kai-illumination.mp3', [1], playButton);
 
 		
 	});

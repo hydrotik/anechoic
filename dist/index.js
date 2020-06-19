@@ -4,7 +4,10 @@ var Anechoic = (function () {
     var Render = (function () {
         function Render(config) {
             var _this = this;
-            this.visualize = function (audioCtx, source) {
+            this.bgColor = '#FFFFFF';
+            this.lineColor = '#000000';
+            this.running = false;
+            this.visualizer = function (audioCtx, source) {
                 _this.WIDTH = _this.WIDTH | _this.canvas.width;
                 _this.HEIGHT = _this.HEIGHT | _this.canvas.height;
                 var analyser = audioCtx.createAnalyser();
@@ -14,15 +17,17 @@ var Anechoic = (function () {
                 analyser.getByteTimeDomainData(dataArray);
                 source.connect(analyser);
                 analyser.connect(audioCtx.destination);
+                _this.running = true;
                 if (_this.type === "wave") {
                     _this.canvasCtx.clearRect(0, 0, _this.WIDTH, _this.HEIGHT);
                     var draw = function () {
-                        _this.drawVisual = requestAnimationFrame(draw);
+                        if (_this.running)
+                            _this.drawVisual = requestAnimationFrame(draw);
                         analyser.getByteTimeDomainData(dataArray);
-                        _this.canvasCtx.fillStyle = "rgb(200, 200, 200)";
+                        _this.canvasCtx.fillStyle = _this.bgColor;
                         _this.canvasCtx.fillRect(0, 0, _this.canvas.width, _this.canvas.height);
                         _this.canvasCtx.lineWidth = 2;
-                        _this.canvasCtx.strokeStyle = "rgb(0, 0, 0)";
+                        _this.canvasCtx.strokeStyle = _this.lineColor;
                         _this.canvasCtx.beginPath();
                         var sliceWidth = _this.canvas.width * 1.0 / bufferLength;
                         var x = 0;
@@ -37,7 +42,6 @@ var Anechoic = (function () {
                             }
                             x += sliceWidth;
                         }
-                        _this.canvasCtx.lineTo(_this.canvas.width, _this.canvas.height / 2);
                         _this.canvasCtx.stroke();
                     };
                     draw();
@@ -73,6 +77,8 @@ var Anechoic = (function () {
             };
             this.stop = function () {
                 cancelAnimationFrame(_this.drawVisual);
+                _this.running = false;
+                _this.drawVisual = undefined;
             };
             this.canvasCtx = config.canvas.getContext("2d");
             this.canvas = config.canvas;
@@ -80,6 +86,10 @@ var Anechoic = (function () {
                 this.WIDTH = config.w;
             if (config.h)
                 this.HEIGHT = config.h;
+            if (config.bgColor)
+                this.bgColor = config.bgColor;
+            if (config.lineColor)
+                this.lineColor = config.lineColor;
             this.type = (config && config.type) ? config.type : 'wave';
         }
         Render.fftSize = 2048;
@@ -296,7 +306,6 @@ var Anechoic = (function () {
                     source.buffer = _this.bufferArray[index];
                     source.connect(_this.audioCtx.destination);
                     source.onended = onAudioEnded;
-                    source.start(0);
                     _this.emit(ON_LOOP_START, {
                         type: ON_LOOP_START,
                         currentIndex: _this.currentIndex,
@@ -304,6 +313,7 @@ var Anechoic = (function () {
                         audioCtx: _this.audioCtx,
                         source: source,
                     });
+                    source.start(0);
                 };
                 if (Array.isArray(url)) {
                     for (var i = 0; i < url.length; i += 1) {

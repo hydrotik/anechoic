@@ -152,10 +152,9 @@ class Looper extends EventEmitter {
 			source.buffer = this.bufferArray[index];
 			source.connect(this.audioCtx.destination);
 			source.onended = onAudioEnded;
-			source.start(0);
-
 			
-
+			
+			
 			this.emit(
 				ON_LOOP_START,
 				{
@@ -165,7 +164,8 @@ class Looper extends EventEmitter {
 					audioCtx: this.audioCtx,
 					source: source,
 				}
-			);
+				);
+			source.start(0);
 		}
 
 		if (Array.isArray(url)) {
