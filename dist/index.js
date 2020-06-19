@@ -1,15 +1,20 @@
 var Anechoic = (function () {
     'use strict';
 
-    var Render = (function () {
+    var Render = /** @class */ (function () {
         function Render(config) {
             var _this = this;
+            this.WIDTH = 0;
+            this.HEIGHT = 0;
+            this.drawVisual = 0;
             this.bgColor = '#FFFFFF';
             this.lineColor = '#000000';
             this.running = false;
             this.visualizer = function (audioCtx, source) {
-                _this.WIDTH = _this.WIDTH | _this.canvas.width;
-                _this.HEIGHT = _this.HEIGHT | _this.canvas.height;
+                if (!_this.WIDTH)
+                    _this.WIDTH = _this.canvas.width;
+                if (!_this.HEIGHT)
+                    _this.HEIGHT = _this.canvas.height;
                 var analyser = audioCtx.createAnalyser();
                 analyser.fftSize = 2048;
                 var bufferLength = analyser.frequencyBinCount;
@@ -18,22 +23,22 @@ var Anechoic = (function () {
                 source.connect(analyser);
                 analyser.connect(audioCtx.destination);
                 _this.running = true;
-                if (_this.type === "wave") {
+                if (_this.type === 'wave') {
                     _this.canvasCtx.clearRect(0, 0, _this.WIDTH, _this.HEIGHT);
-                    var draw = function () {
+                    var draw_1 = function () {
                         if (_this.running)
-                            _this.drawVisual = requestAnimationFrame(draw);
+                            _this.drawVisual = requestAnimationFrame(draw_1);
                         analyser.getByteTimeDomainData(dataArray);
                         _this.canvasCtx.fillStyle = _this.bgColor;
                         _this.canvasCtx.fillRect(0, 0, _this.canvas.width, _this.canvas.height);
                         _this.canvasCtx.lineWidth = 2;
                         _this.canvasCtx.strokeStyle = _this.lineColor;
                         _this.canvasCtx.beginPath();
-                        var sliceWidth = _this.canvas.width * 1.0 / bufferLength;
+                        var sliceWidth = (_this.canvas.width * 1.0) / bufferLength;
                         var x = 0;
-                        for (var i = 0; i < bufferLength; i++) {
+                        for (var i = 0; i < bufferLength; i += 1) {
                             var v = dataArray[i] / 128.0;
-                            var y = v * _this.canvas.height / 2;
+                            var y = (v * _this.canvas.height) / 2;
                             if (i === 0) {
                                 _this.canvasCtx.moveTo(x, y);
                             }
@@ -42,45 +47,45 @@ var Anechoic = (function () {
                             }
                             x += sliceWidth;
                         }
+                        // this.canvasCtx.lineTo(this.canvas.width, this.canvas.height / 2);
                         _this.canvasCtx.stroke();
                     };
-                    draw();
+                    draw_1();
                 }
-                else if (_this.type == "bars") {
+                else if (_this.type === 'bars') {
                     analyser.fftSize = 256;
-                    var bufferLengthAlt = analyser.frequencyBinCount;
-                    console.log(bufferLengthAlt);
-                    var dataArrayAlt = new Uint8Array(bufferLengthAlt);
+                    var bufferLengthAlt_1 = analyser.frequencyBinCount;
+                    var dataArrayAlt_1 = new Uint8Array(bufferLengthAlt_1);
                     _this.canvasCtx.clearRect(0, 0, _this.WIDTH, _this.HEIGHT);
-                    var drawAlt = function () {
-                        _this.drawVisual = requestAnimationFrame(drawAlt);
-                        analyser.getByteFrequencyData(dataArrayAlt);
+                    var drawAlt_1 = function () {
+                        _this.drawVisual = requestAnimationFrame(drawAlt_1);
+                        analyser.getByteFrequencyData(dataArrayAlt_1);
                         _this.canvasCtx.fillStyle = 'rgb(0, 0, 0)';
                         _this.canvasCtx.fillRect(0, 0, _this.WIDTH, _this.HEIGHT);
-                        var barWidth = (_this.WIDTH / bufferLengthAlt) * 2.5;
+                        var barWidth = (_this.WIDTH / bufferLengthAlt_1) * 2.5;
                         var barHeight;
                         var x = 0;
-                        for (var i = 0; i < bufferLengthAlt; i++) {
-                            barHeight = dataArrayAlt[i];
-                            _this.canvasCtx.fillStyle = 'rgb(' + (barHeight + 100) + ',50,50)';
+                        for (var i = 0; i < bufferLengthAlt_1; i += 1) {
+                            barHeight = dataArrayAlt_1[i];
+                            _this.canvasCtx.fillStyle = "rgb(" + (barHeight + 100) + ",50,50)";
                             _this.canvasCtx.fillRect(x, _this.HEIGHT - barHeight / 2, barWidth, barHeight / 2);
                             x += barWidth + 1;
                         }
                     };
-                    drawAlt();
+                    drawAlt_1();
                 }
-                else if (_this.type == "off") {
+                else if (_this.type === 'off') {
                     _this.canvasCtx.clearRect(0, 0, _this.WIDTH, _this.HEIGHT);
-                    _this.canvasCtx.fillStyle = "red";
+                    _this.canvasCtx.fillStyle = 'red';
                     _this.canvasCtx.fillRect(0, 0, _this.WIDTH, _this.HEIGHT);
                 }
             };
             this.stop = function () {
                 cancelAnimationFrame(_this.drawVisual);
                 _this.running = false;
-                _this.drawVisual = undefined;
+                _this.drawVisual = 0;
             };
-            this.canvasCtx = config.canvas.getContext("2d");
+            this.canvasCtx = config.canvas.getContext('2d');
             this.canvas = config.canvas;
             if (config.w)
                 this.WIDTH = config.w;
@@ -95,6 +100,7 @@ var Anechoic = (function () {
         Render.fftSize = 2048;
         return Render;
     }());
+    // https://github.com/mdn/voice-change-o-matic/blob/gh-pages/scripts/app.js#L128-L205
 
     /*! *****************************************************************************
     Copyright (c) Microsoft Corporation.
@@ -163,7 +169,7 @@ var Anechoic = (function () {
         }
     }
 
-    var EventEmitter = (function () {
+    var EventEmitter = /** @class */ (function () {
         function EventEmitter() {
             this.events = {};
         }
@@ -214,7 +220,7 @@ var Anechoic = (function () {
     var ON_STATE_CHANGED = 'onStateChanged';
     var ON_DECODE_ERROR = 'onDecodeError';
 
-    var Looper = (function (_super) {
+    var Looper = /** @class */ (function (_super) {
         __extends(Looper, _super);
         function Looper(config) {
             var _this = _super.call(this) || this;
@@ -232,6 +238,50 @@ var Anechoic = (function () {
                 else {
                     _this.loadLength = 1;
                 }
+                /*
+                // https://developers.google.com/web/updates/2012/02/HTML5-audio-and-the-Web-Audio-API-are-BFFs
+                //
+                // Wait for window.onload to fire. See crbug.com/112368
+                window.addEventListener('load', function(e) {
+                    // Our <audio> element will be the audio source.
+                    var source = context.createMediaElementSource(audio);
+                    source.connect(analyser);
+                    analyser.connect(context.destination);
+        
+                    // ...call requestAnimationFrame() and render the analyser's output to canvas.
+                }, false);
+                */
+                var startAudio;
+                var handAudioDecode = function (r, index) {
+                    _this.audioCtx.decodeAudioData(r, function (buffer) {
+                        if (Array.isArray(_this.loops)) {
+                            for (var i = 0; i < _this.loops[index]; i += 1) {
+                                _this.bufferArray.push(buffer);
+                            }
+                        }
+                        else {
+                            _this.bufferArray.push(buffer);
+                        }
+                        if (_this.loadIndex === _this.loadLength - 1) {
+                            _this.audioCtx.onstatechange = function () {
+                                var _a;
+                                _this.emit(ON_STATE_CHANGED, {
+                                    type: ON_STATE_CHANGED,
+                                    state: (_a = _this.audioCtx) === null || _a === void 0 ? void 0 : _a.state,
+                                });
+                            };
+                            startAudio(0);
+                        }
+                        else {
+                            _this.loadIndex += 1;
+                        }
+                    }, function (e) {
+                        _this.emit(ON_DECODE_ERROR, {
+                            type: ON_DECODE_ERROR,
+                            message: "Error decoding audio data " + e,
+                        });
+                    });
+                };
                 var loadData = function (u, index) {
                     var request = new XMLHttpRequest();
                     request.open('GET', u, true);
@@ -243,65 +293,36 @@ var Anechoic = (function () {
                                 case 0:
                                     r = request.response;
                                     this.audioData = r;
-                                    return [4, handAudioDecode(r, index)];
+                                    return [4 /*yield*/, handAudioDecode(r, index)];
                                 case 1:
                                     _a.sent();
-                                    return [2];
+                                    return [2 /*return*/];
                             }
                         });
                     }); };
                     request.send();
                 };
-                var handAudioDecode = function (r, index) {
-                    var _a;
-                    (_a = _this.audioCtx) === null || _a === void 0 ? void 0 : _a.decodeAudioData(r, function (buffer) {
-                        if (Array.isArray(_this.loops)) {
-                            for (var i = 0; i < _this.loops[index]; i += 1) {
-                                _this.bufferArray.push(buffer);
-                            }
-                        }
-                        else {
-                            _this.bufferArray.push(buffer);
-                        }
-                        if (_this.loadIndex == _this.loadLength - 1) {
-                            _this.audioCtx.onstatechange = function () {
-                                var _a;
-                                _this.emit(ON_STATE_CHANGED, {
-                                    type: ON_STATE_CHANGED,
-                                    state: (_a = _this.audioCtx) === null || _a === void 0 ? void 0 : _a.state
-                                });
-                            };
-                            startAudio(0);
-                        }
-                        else {
-                            _this.loadIndex += 1;
-                        }
-                    }, function (e) {
-                        _this.emit(ON_DECODE_ERROR, {
-                            type: ON_DECODE_ERROR,
-                            message: "Error decoding audio data " + e
-                        });
-                    });
-                };
                 var onAudioEnded = function () {
+                    var _a, _b;
                     if (_this.currentIndex < _this.bufferArray.length - 1) {
                         startAudio(_this.currentIndex);
                         _this.emit(ON_LOOP_COMPLETE, {
                             type: ON_LOOP_COMPLETE,
                             currentIndex: _this.currentIndex,
-                            loopCount: (_this.loops.hasOwnProperty('length')) ? _this.loops.length : _this.loops
+                            loopCount: ((_a = _this.loops) === null || _a === void 0 ? void 0 : _a.hasOwnProperty('length')) ? _this.loops.length : _this.loops,
                         });
                     }
                     else {
                         _this.emit(ON_SEQUENCE_COMPLETE, {
                             type: ON_SEQUENCE_COMPLETE,
                             currentIndex: _this.currentIndex,
-                            loopCount: (_this.loops.hasOwnProperty('length')) ? _this.loops.length : _this.loops
+                            loopCount: ((_b = _this.loops) === null || _b === void 0 ? void 0 : _b.hasOwnProperty('length')) ? _this.loops.length : _this.loops,
                         });
                     }
-                    _this.currentIndex = _this.currentIndex + 1;
+                    _this.currentIndex += 1;
                 };
-                var startAudio = function (index) {
+                startAudio = function (index) {
+                    var _a;
                     var source = _this.audioCtx.createBufferSource();
                     source.buffer = _this.bufferArray[index];
                     source.connect(_this.audioCtx.destination);
@@ -309,7 +330,7 @@ var Anechoic = (function () {
                     _this.emit(ON_LOOP_START, {
                         type: ON_LOOP_START,
                         currentIndex: _this.currentIndex,
-                        loopCount: (_this.loops.hasOwnProperty('length')) ? _this.loops.length : _this.loops,
+                        loopCount: ((_a = _this.loops) === null || _a === void 0 ? void 0 : _a.hasOwnProperty('length')) ? _this.loops.length : _this.loops,
                         audioCtx: _this.audioCtx,
                         source: source,
                     });
@@ -327,10 +348,11 @@ var Anechoic = (function () {
                     _this.playButton.addEventListener('click', function (event) {
                         event.preventDefault();
                         _this.audioCtx.resume().then(function () {
+                            var _a;
                             _this.emit(ON_RESUMED, {
                                 type: ON_RESUMED,
                                 currentIndex: _this.currentIndex,
-                                loopCount: (_this.loops.hasOwnProperty('length')) ? _this.loops.length : _this.loops
+                                loopCount: ((_a = _this.loops) === null || _a === void 0 ? void 0 : _a.hasOwnProperty('length')) ? _this.loops.length : _this.loops,
                             });
                         });
                     }, false);
@@ -346,20 +368,22 @@ var Anechoic = (function () {
             _this.config = config;
             _this.audioData = [];
             _this.bufferArray = [];
-            _this.isWebKit = (window.webkitAudioContext) ? true : false;
+            _this.isWebKit = !!(window.webkitAudioContext);
             return _this;
         }
         return Looper;
     }(EventEmitter));
 
-    var Anechoic = (function () {
+    var Anechoic = /** @class */ (function () {
         function Anechoic(config) {
             var _this = this;
             this.getLooper = function (config) {
-                return _this.looper = (_this.looper || new Looper(config));
+                _this.looper = (_this.looper || new Looper(config));
+                return _this.looper;
             };
             this.getRender = function (config) {
-                return _this.render = (_this.render || new Render(config));
+                _this.render = (_this.render || new Render(config));
+                return _this.render;
             };
             this.config = config;
         }

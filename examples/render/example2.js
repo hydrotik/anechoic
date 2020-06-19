@@ -1,23 +1,21 @@
 (() => {
-	window.addEventListener('DOMContentLoaded', (event) => {
+	window.addEventListener('DOMContentLoaded', () => {
 		console.log('Loading Example 2');
 
 		const playButton = document.querySelector('#play-button');
-		const canvas = document.getElementById('render-container')
+		const canvas = document.getElementById('render-container');
 
 		const anechoic = new Anechoic({});
 
 		const looper = anechoic.getLooper();
 
 		const render = anechoic.getRender({
-			canvas: canvas,
+			canvas,
 			w: 350,
 			h: 150,
 			bgColor: '#F2F2F2',
 			lineColor: '#D95032',
 		});
-
-		
 
 		looper.on('onLoopStart', (params) => {
 			console.log(params);
@@ -41,7 +39,5 @@
 		});
 		looper.loopAudio('../audio-files/djdonovan-eclipse-loop-1.wav', [4], playButton);
 		// looper.loopAudio('../audio-files/kai-illumination.mp3', [1], playButton);
-
-		
 	});
 })();

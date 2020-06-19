@@ -6,9 +6,9 @@ export default {
 	output: {
 		dir: 'dist',
 		format: 'iife',
-		name: 'Anechoic'
+		name: 'Anechoic',
 	},
 	plugins: [
-		typescript({ lib: ["es5", "es6", "dom"], target: "es5" })
-	]
+		typescript({ lib: ['es5', 'es6', 'dom'], target: 'es5' }),
+	],
 };

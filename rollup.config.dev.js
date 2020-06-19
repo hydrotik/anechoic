@@ -6,19 +6,19 @@ export default {
 	output: {
 		dir: 'dist',
 		format: 'iife',
-		name: 'Anechoic'
+		name: 'Anechoic',
 	},
 	globals: {
-		'react': 'React',
+		react: 'React',
 		'react-dom': 'ReactDOM',
-		'prop-types': 'PropTypes'
-	  },
-	  external: [
+		'prop-types': 'PropTypes',
+	},
+	external: [
 		'react',
 		'react-dom',
-		'prop-types'
-	  ],
+		'prop-types',
+	],
 	plugins: [
-		typescript({ lib: ["es5", "es6", "dom"], target: "es5" })
-	]
+		typescript({ lib: ['es5', 'es6', 'dom'], target: 'es5' }),
+	],
 };
