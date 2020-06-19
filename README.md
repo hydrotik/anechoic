@@ -16,6 +16,9 @@ Version 0.0.1
 
 ## Todos
 - [x] Events
+- [ ] Playback controls
+- [ ] Waveform render preview
+- [ ] Playback chrome (waveform render preview timeline)
 - [ ] Performance framework and memory management analysis
 - [ ] Realtime sequence changes
 - [ ] Rollup watch issues
