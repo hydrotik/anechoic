@@ -11,14 +11,15 @@ Version 0.0.1
 - [ ] Normalize behavior across browsers
 - [ ] Account for required user interactions in Safari
 - [x] Render waveform in Render using canvas
-- [ ] Render waveform with multiple loops
+- [x] Render waveform with multiple loops
+- [ ] Dynamic loop sequencing
 
 ## Todos
 - [x] Events
 - [ ] Performance framework and memory management analysis
 - [ ] Realtime sequence changes
 - [ ] Rollup watch issues
-- [ ] TSLint completely working
+- [x] TSLint completely working
 - [ ] Unit Tests
 - [ ] Cleanup NPM entry points
 - [ ] Test, dev, and prod rollup config
