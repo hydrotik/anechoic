@@ -53,16 +53,16 @@ class Render {
 			const anotherArray = new Float32Array(ab.length);
 			ab.copyFromChannel(anotherArray, 1, 0);
 			// eslint-disable-next-line no-console
-			console.log(`new buffer: ${anotherArray.length}`);
+			// console.log(`new buffer: ${anotherArray.length}`);
 			// eslint-disable-next-line no-console
 			// console.log(anotherArray);
 
 			// const ds = largestTriangleThreeBuckets(anotherArray, 150);
 			const ds = downSampleArray(anotherArray, 1200);
 			// eslint-disable-next-line no-console
-			console.log(ds.length);
+			// console.log(ds.length);
 			// eslint-disable-next-line no-console
-			console.log(ds);
+			// console.log(ds);
 
 			this.canvasCtx.fillStyle = this.bgColor;
 			this.canvasCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -75,17 +75,19 @@ class Render {
 			const sliceWidth = 0.5; // (this.canvas.width * 1.0) / bufferLength;
 			let x = 0;
 
-			for (let i = 0; i < ds.length; i += 1) {
-				const v = ds[i];
-				const y = ((v * this.canvas.height) / 2) + (this.canvas.height / 2);
+			for (let i = 0; i < 4; i += 1) {
+				for (let l = 0; l < ds.length; l += 1) {
+					const v = ds[l] * 1.25;
+					const y = ((v * this.canvas.height) / 2) + (this.canvas.height / 2);
 
-				if (i === 0) {
-					this.canvasCtx.moveTo(x, y);
-				} else {
-					this.canvasCtx.lineTo(x, y);
+					if (l === 0 && i === 0) {
+						this.canvasCtx.moveTo(x, y);
+					} else {
+						this.canvasCtx.lineTo(x, y);
+					}
+
+					x += sliceWidth / 8;
 				}
-
-				x += sliceWidth;
 			}
 
 			// this.canvasCtx.lineTo(this.canvas.width, this.canvas.height / 2);

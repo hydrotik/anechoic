@@ -10,19 +10,22 @@ Version 0.0.1
 - [x] Loop multiple waves seamlessly
 - [ ] Normalize behavior across browsers
 - [ ] Account for required user interactions in Safari
-- [x] Render waveform in Render using canvas
-- [x] Render waveform with multiple loops
+- [x] Waveform visualizer in Render using canvas
+- [x] Waveform preview in Render using canvas
+- [x] Render waveform visualizer with multiple loops
 - [ ] Dynamic loop sequencing
 
 ## Todos
 - [x] Events
 - [ ] Playback controls
-- [ ] Waveform render preview
+- [x] Waveform render preview
+- [ ] Clean up waveform render preview
+- [ ] Account for sequenced loops in waveform preview
 - [ ] Playback chrome (waveform render preview timeline)
 - [ ] Performance framework and memory management analysis
 - [ ] Realtime sequence changes
 - [ ] Rollup watch issues
-- [x] TSLint completely working
+- [x] TSLint
 - [ ] Unit Tests
 - [ ] Cleanup NPM entry points
 - [ ] Test, dev, and prod rollup config

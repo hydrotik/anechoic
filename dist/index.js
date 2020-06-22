@@ -29,15 +29,15 @@ var Anechoic = (function () {
                     var anotherArray = new Float32Array(ab.length);
                     ab.copyFromChannel(anotherArray, 1, 0);
                     // eslint-disable-next-line no-console
-                    console.log("new buffer: " + anotherArray.length);
+                    // console.log(`new buffer: ${anotherArray.length}`);
                     // eslint-disable-next-line no-console
                     // console.log(anotherArray);
                     // const ds = largestTriangleThreeBuckets(anotherArray, 150);
                     var ds = downSampleArray(anotherArray, 1200);
                     // eslint-disable-next-line no-console
-                    console.log(ds.length);
+                    // console.log(ds.length);
                     // eslint-disable-next-line no-console
-                    console.log(ds);
+                    // console.log(ds);
                     _this.canvasCtx.fillStyle = _this.bgColor;
                     _this.canvasCtx.fillRect(0, 0, _this.canvas.width, _this.canvas.height);
                     _this.canvasCtx.lineWidth = 1;
@@ -45,16 +45,18 @@ var Anechoic = (function () {
                     _this.canvasCtx.beginPath();
                     var sliceWidth = 0.5; // (this.canvas.width * 1.0) / bufferLength;
                     var x = 0;
-                    for (var i = 0; i < ds.length; i += 1) {
-                        var v = ds[i];
-                        var y = ((v * _this.canvas.height) / 2) + (_this.canvas.height / 2);
-                        if (i === 0) {
-                            _this.canvasCtx.moveTo(x, y);
+                    for (var i = 0; i < 4; i += 1) {
+                        for (var l = 0; l < ds.length; l += 1) {
+                            var v = ds[l] * 1.25;
+                            var y = ((v * _this.canvas.height) / 2) + (_this.canvas.height / 2);
+                            if (l === 0 && i === 0) {
+                                _this.canvasCtx.moveTo(x, y);
+                            }
+                            else {
+                                _this.canvasCtx.lineTo(x, y);
+                            }
+                            x += sliceWidth / 8;
                         }
-                        else {
-                            _this.canvasCtx.lineTo(x, y);
-                        }
-                        x += sliceWidth;
                     }
                     // this.canvasCtx.lineTo(this.canvas.width, this.canvas.height / 2);
                     _this.canvasCtx.stroke();
