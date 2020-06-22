@@ -6,9 +6,9 @@ interface ConfigInterface {
 }
 
 class Anechoic {
-	private looper: Looper | undefined;
+	// private looper: Looper | undefined;
 
-	private render: Render | undefined;
+	// private render: Render | undefined;
 
 	private config: ConfigInterface;
 
@@ -16,15 +16,9 @@ class Anechoic {
 		this.config = config;
 	}
 
-	public getLooper = (config: LooperConfig): Looper => {
-		this.looper = (this.looper || new Looper(config));
-		return this.looper;
-	}
+	public getLooper = (config: LooperConfig): Looper => new Looper(config);
 
-	public getRender = (config: RenderConfig): Render => {
-		this.render = (this.render || new Render(config));
-		return this.render;
-	}
+	public getRender = (config: RenderConfig): Render => new Render(config)
 }
 
 export default Anechoic;

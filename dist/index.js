@@ -1,6 +1,15 @@
 var Anechoic = (function () {
     'use strict';
 
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    var downSampleArray = function (array, newLength) {
+        if (newLength >= array.length) {
+            return array.slice();
+        }
+        var factor = array.length / (array.length - newLength);
+        return array.filter(function (e, i) { return Math.floor(i % factor); });
+    };
+
     var Render = /** @class */ (function () {
         function Render(config) {
             var _this = this;
@@ -10,6 +19,47 @@ var Anechoic = (function () {
             this.bgColor = '#FFFFFF';
             this.lineColor = '#000000';
             this.running = false;
+            this.preview = function (audioCtx, source) {
+                // eslint-disable-next-line no-console
+                console.log('Render :: preview()');
+                // eslint-disable-next-line no-console
+                console.log(source.buffer);
+                var ab = source.buffer;
+                if (ab) {
+                    var anotherArray = new Float32Array(ab.length);
+                    ab.copyFromChannel(anotherArray, 1, 0);
+                    // eslint-disable-next-line no-console
+                    console.log("new buffer: " + anotherArray.length);
+                    // eslint-disable-next-line no-console
+                    // console.log(anotherArray);
+                    // const ds = largestTriangleThreeBuckets(anotherArray, 150);
+                    var ds = downSampleArray(anotherArray, 1200);
+                    // eslint-disable-next-line no-console
+                    console.log(ds.length);
+                    // eslint-disable-next-line no-console
+                    console.log(ds);
+                    _this.canvasCtx.fillStyle = _this.bgColor;
+                    _this.canvasCtx.fillRect(0, 0, _this.canvas.width, _this.canvas.height);
+                    _this.canvasCtx.lineWidth = 1;
+                    _this.canvasCtx.strokeStyle = _this.lineColor;
+                    _this.canvasCtx.beginPath();
+                    var sliceWidth = 0.5; // (this.canvas.width * 1.0) / bufferLength;
+                    var x = 0;
+                    for (var i = 0; i < ds.length; i += 1) {
+                        var v = ds[i];
+                        var y = ((v * _this.canvas.height) / 2) + (_this.canvas.height / 2);
+                        if (i === 0) {
+                            _this.canvasCtx.moveTo(x, y);
+                        }
+                        else {
+                            _this.canvasCtx.lineTo(x, y);
+                        }
+                        x += sliceWidth;
+                    }
+                    // this.canvasCtx.lineTo(this.canvas.width, this.canvas.height / 2);
+                    _this.canvasCtx.stroke();
+                }
+            };
             this.visualizer = function (audioCtx, source) {
                 if (!_this.WIDTH)
                     _this.WIDTH = _this.canvas.width;
@@ -376,15 +426,8 @@ var Anechoic = (function () {
 
     var Anechoic = /** @class */ (function () {
         function Anechoic(config) {
-            var _this = this;
-            this.getLooper = function (config) {
-                _this.looper = (_this.looper || new Looper(config));
-                return _this.looper;
-            };
-            this.getRender = function (config) {
-                _this.render = (_this.render || new Render(config));
-                return _this.render;
-            };
+            this.getLooper = function (config) { return new Looper(config); };
+            this.getRender = function (config) { return new Render(config); };
             this.config = config;
         }
         return Anechoic;

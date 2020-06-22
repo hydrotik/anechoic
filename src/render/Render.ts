@@ -1,3 +1,5 @@
+import { downSampleArray } from '../utils/DownSample';
+
 export interface RenderConfig {
 	canvas: HTMLCanvasElement,
 	audioCtx: AudioContext,
@@ -39,6 +41,57 @@ class Render {
 		this.type = (config && config.type) ? config.type : 'wave';
 	}
 
+
+	public preview = (audioCtx: AudioContext, source: AudioBufferSourceNode): void => {
+		// eslint-disable-next-line no-console
+		console.log('Render :: preview()');
+		// eslint-disable-next-line no-console
+		console.log(source.buffer);
+		const ab: AudioBuffer | null = source.buffer;
+
+		if (ab) {
+			const anotherArray = new Float32Array(ab.length);
+			ab.copyFromChannel(anotherArray, 1, 0);
+			// eslint-disable-next-line no-console
+			console.log(`new buffer: ${anotherArray.length}`);
+			// eslint-disable-next-line no-console
+			// console.log(anotherArray);
+
+			// const ds = largestTriangleThreeBuckets(anotherArray, 150);
+			const ds = downSampleArray(anotherArray, 1200);
+			// eslint-disable-next-line no-console
+			console.log(ds.length);
+			// eslint-disable-next-line no-console
+			console.log(ds);
+
+			this.canvasCtx.fillStyle = this.bgColor;
+			this.canvasCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+			this.canvasCtx.lineWidth = 1;
+			this.canvasCtx.strokeStyle = this.lineColor;
+
+			this.canvasCtx.beginPath();
+
+			const sliceWidth = 0.5; // (this.canvas.width * 1.0) / bufferLength;
+			let x = 0;
+
+			for (let i = 0; i < ds.length; i += 1) {
+				const v = ds[i];
+				const y = ((v * this.canvas.height) / 2) + (this.canvas.height / 2);
+
+				if (i === 0) {
+					this.canvasCtx.moveTo(x, y);
+				} else {
+					this.canvasCtx.lineTo(x, y);
+				}
+
+				x += sliceWidth;
+			}
+
+			// this.canvasCtx.lineTo(this.canvas.width, this.canvas.height / 2);
+			this.canvasCtx.stroke();
+		}
+	}
 
 	public visualizer = (audioCtx: AudioContext, source: AudioBufferSourceNode): void => {
 		if (!this.WIDTH) this.WIDTH = this.canvas.width;
